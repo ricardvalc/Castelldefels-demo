@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UE Castelldefels — Plantilla i estadístiques</title>
+<style>
+  :root{
+    --night:#08172B;
+    --deep:#0D2B4E;
+    --mid:#16456F;
+    --gold:#D9A72B;
+    --gold-lt:#F0CE6E;
+    --paper:#0A1A2F;
+    --ice:#E8EEF5;
+    --muted:#8DA3BD;
+    --pitch:#1E9B63;
+    --yellow:#F4C430;
+    --red:#E04A3C;
+    --line:rgba(216,167,43,.22);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ice);
+    font-family:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+    font-variant-numeric:tabular-nums;line-height:1.4;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:0 14px 70px}
+
+  /* ---------- club header ---------- */
+  .club{display:flex;gap:14px;align-items:center;padding:22px 0 16px}
+  .crest{width:62px;height:62px;flex:0 0 62px;object-fit:contain}
+  .club h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .club .sub{font-size:13px;color:var(--muted);margin-top:3px}
+
+  .record{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:4px}
+  .record div{flex:1;background:var(--night);padding:10px 4px;text-align:center}
+  .record b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .record span{font-size:11px;color:var(--muted)}
+
+  .notice{
+    font-size:12px;color:var(--muted);border-left:2px solid var(--gold);
+    padding:6px 0 6px 10px;margin:14px 0 4px;
+  }
+
+  /* ---------- tabs & controls ---------- */
+  .tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin:18px 0 0}
+  .tab{
+    background:none;border:0;color:var(--muted);font:inherit;font-size:15px;font-weight:600;
+    padding:10px 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .tab[aria-selected=true]{color:var(--ice);border-bottom-color:var(--gold)}
+  .tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  .controls{display:flex;align-items:center;gap:8px;margin:14px 0 4px;font-size:13px;color:var(--muted)}
+  select{
+    font:inherit;font-size:13px;background:var(--night);color:var(--ice);
+    border:1px solid var(--line);border-radius:2px;padding:6px 8px;
+  }
+
+  /* ---------- player cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:14px}
+  @media (min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+  .card{
+    position:relative;border:0;padding:0;cursor:pointer;text-align:left;
+    aspect-ratio:3/4;width:100%;color:var(--ice);font:inherit;
+    background:linear-gradient(163deg,var(--mid) 0%,var(--deep) 46%,var(--night) 100%);
+    clip-path:polygon(0 0,100% 0,100% 88%,50% 100%,0 88%);
+    display:flex;flex-direction:column;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(163deg,var(--gold-lt),var(--gold) 40%,transparent 72%);
+    opacity:.5;clip-path:polygon(0 0,100% 0,100% 88%,50% 100%,0 88%);
+    -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+    -webkit-mask-composite:xor;mask-composite:exclude;padding:1.5px;pointer-events:none;
+  }
+  .card:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .card.gk{background:linear-gradient(163deg,#1d6a52 0%,#0F4234 46%,#07231B 100%)}
+
+  .card .top{display:flex;gap:8px;padding:11px 11px 0}
+  .card .num{font-size:31px;font-weight:800;line-height:.92;letter-spacing:-.04em}
+  .card .pos{font-size:10.5px;color:var(--gold-lt);letter-spacing:.09em;margin-top:3px}
+  .card .dor{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .card .conf{height:2px;background:rgba(255,255,255,.09);margin:0 11px 5px}
+  .card .conf span{display:block;height:100%;background:var(--gold);opacity:.75}
+  .bar{height:6px;background:rgba(255,255,255,.09);border-radius:3px;overflow:hidden;margin-top:5px}
+  .bar i{display:block;height:100%;background:var(--gold)}
+  .brk{font-size:13px;margin:2px 0 14px}
+  .brk div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)}
+  .brk b{font-weight:700}
+  .pos-pick{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
+  .pos-pick button{font:inherit;font-size:12.5px;padding:6px 12px;background:var(--night);
+    color:var(--muted);border:1px solid var(--line);border-radius:2px;cursor:pointer}
+  .pos-pick button[aria-pressed=true]{background:var(--gold);color:#2A1E00;border-color:var(--gold);font-weight:700}
+  .snippet{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);
+    background:#050F1D;border:1px solid var(--line);padding:9px;overflow-x:auto;white-space:pre}
+  .card .badges{margin-left:auto;text-align:right;font-size:10px;line-height:1.5}
+  .badge{display:inline-block;padding:1px 4px;border-radius:2px;font-weight:700}
+  .b-c{background:rgba(255,255,255,.14);color:var(--ice)}
+  .b-g{background:var(--pitch);color:#04150E}
+  .b-y{background:var(--yellow);color:#3A2C00}
+  .b-r{background:var(--red);color:#fff}
+
+  .kit{flex:1 1 auto;display:grid;place-items:center;padding:2px 0 0}
+  .kit svg{width:56%;max-width:78px;opacity:.9}
+
+  .card .nm{
+    font-size:12.5px;font-weight:700;text-align:center;letter-spacing:-.01em;
+    padding:0 7px 6px;border-bottom:1px solid var(--line);line-height:1.2;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .card .stats{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;padding:6px 11px 20px;font-size:11px}
+  .card .stats span{display:flex;justify-content:space-between;color:var(--muted)}
+  .card .stats b{color:var(--ice);font-weight:700}
+
+  /* ---------- match list ---------- */
+  .match{
+    display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--line);
+  }
+  .jor{flex:0 0 38px;text-align:center}
+  .jor b{display:block;font-size:16px;font-weight:800}
+  .jor span{font-size:10px;color:var(--muted)}
+  .fx{flex:1 1 auto;min-width:0}
+  .fx .t{font-size:14.5px;font-weight:600}
+  .fx .d{font-size:12px;color:var(--muted);margin-top:1px}
+  .res{flex:0 0 auto;font-size:17px;font-weight:800;padding:3px 9px;border-radius:2px}
+  .res.w{background:var(--pitch);color:#04150E}
+  .res.d{background:rgba(255,255,255,.13)}
+  .res.l{background:var(--red);color:#fff}
+
+  /* ---------- detail sheet ---------- */
+  dialog{
+    border:0;padding:0;background:var(--night);color:var(--ice);width:min(520px,94vw);
+    border-top:3px solid var(--gold);border-radius:3px;
+  }
+  dialog::backdrop{background:rgba(3,10,20,.78)}
+  .sheet{padding:18px 18px 22px}
+  .sheet h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  .sheet .role{font-size:13px;color:var(--muted);margin-top:4px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+        border:1px solid var(--line);margin:16px 0}
+  .kpis div{background:var(--night);padding:9px 3px;text-align:center}
+  .kpis b{display:block;font-size:17px;font-weight:800}
+  .kpis span{font-size:10px;color:var(--muted)}
+  .log{font-size:13.5px}
+  .log .l{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .log .l i{flex:0 0 34px;font-style:normal;color:var(--muted);font-size:12px}
+  .close{
+    margin-top:18px;width:100%;padding:11px;font:inherit;font-weight:700;
+    background:var(--gold);color:#2A1E00;border:0;border-radius:2px;cursor:pointer;
+  }
+  footer{margin-top:30px;font-size:11.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="club">
+    <img class="crest" id="crest" alt=""
+         src="https://files.fcf.cat/escudos/clubes/escudos/00100_0000654303_castelldefels_200x200.png"
+         onerror="this.style.display='none'">
+    <div>
+      <h1>Unió Esportiva Castelldefels</h1>
+      <div class="sub" id="compline"></div>
+    </div>
+  </div>
+
+  <div class="record" id="record"></div>
+  <div class="notice" id="notice"></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-view="squad">Plantilla</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="matches">Partits</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="staff">Cos tècnic</button>
+  </div>
+
+  <div class="controls" id="controls">
+    <label for="sort">Ordena per</label>
+    <select id="sort">
+      <option value="rating">Valoració</option>
+      <option value="minutes">Minuts jugats</option>
+      <option value="dorsal">Dorsal</option>
+      <option value="name">Nom</option>
+      <option value="goals">Gols</option>
+      <option value="cards">Targetes</option>
+    </select>
+  </div>
+
+  <div id="view"></div>
+
+  <footer>
+    Prototip intern · dades de les actes federatives · no distribuir.
+  </footer>
+</div>
+
+<dialog id="sheet"><div class="sheet" id="sheetBody"></div></dialog>
+
+<script>window.FCF_DATA = {"appearances": [{"appearance_id": 1, "acta_id": 3784273, "person_id": 9, "club_id": 1150, "dorsal": 13, "position": "POR", "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "GARCIA MARTÍN, ÁLVARO", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 2, "acta_id": 3784273, "person_id": 10, "club_id": 1150, "dorsal": 6, "position": null, "captain": 1, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "GIMENO HERNÁNDEZ, ADRIÁN", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 3, "acta_id": 3784273, "person_id": 11, "club_id": 1150, "dorsal": 3, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "PEÑAS ANDREU, ALEX", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 4, "acta_id": 3784273, "person_id": 12, "club_id": 1150, "dorsal": 10, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 65, "minutes_played": 65, "goals": 0, "yellows": 0, "reds": 0, "name": "PARRA GARCIA, EDGAR", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 5, "acta_id": 3784273, "person_id": 13, "club_id": 1150, "dorsal": 14, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 89, "minutes_played": 89, "goals": 0, "yellows": 0, "reds": 0, "name": "GIBERT FUERTES, JOAN", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 6, "acta_id": 3784273, "person_id": 14, "club_id": 1150, "dorsal": 5, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "ORTEGA RAMIREZ, IVAN", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 7, "acta_id": 3784273, "person_id": 15, "club_id": 1150, "dorsal": 4, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 77, "minutes_played": 77, "goals": 0, "yellows": 1, "reds": 0, "name": "ESTEBAN CANELLES, ALEIX", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 8, "acta_id": 3784273, "person_id": 16, "club_id": 1150, "dorsal": 22, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 65, "minutes_played": 65, "goals": 0, "yellows": 0, "reds": 0, "name": "PALOU NOGALES, CARLOS", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 9, "acta_id": 3784273, "person_id": 17, "club_id": 1150, "dorsal": 23, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 65, "minutes_played": 65, "goals": 0, "yellows": 1, "reds": 0, "name": "MATAMOROS SEGURA, JOEL", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 10, "acta_id": 3784273, "person_id": 18, "club_id": 1150, "dorsal": 9, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "POZUELO RIERA, ELOI", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 11, "acta_id": 3784273, "person_id": 19, "club_id": 1150, "dorsal": 19, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 1, "reds": 0, "name": "VILLAVERDE GARCIA, KILIAN", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 12, "acta_id": 3784273, "person_id": 20, "club_id": 1150, "dorsal": 1, "position": "POR", "captain": 0, "started": 0, "on_minute": null, "off_minute": null, "minutes_played": 0, "goals": 0, "yellows": 0, "reds": 0, "name": "FERRANDO RASO, ALEX", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 13, "acta_id": 3784273, "person_id": 21, "club_id": 1150, "dorsal": 11, "position": null, "captain": 0, "started": 0, "on_minute": 77, "off_minute": null, "minutes_played": 13, "goals": 0, "yellows": 0, "reds": 1, "name": "GERBOLES PEREZ, MARIO", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 14, "acta_id": 3784273, "person_id": 22, "club_id": 1150, "dorsal": 7, "position": null, "captain": 0, "started": 0, "on_minute": 65, "off_minute": null, "minutes_played": 25, "goals": 0, "yellows": 0, "reds": 0, "name": "DIAZ MENDOZA, ALEIX", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 15, "acta_id": 3784273, "person_id": 23, "club_id": 1150, "dorsal": 17, "position": null, "captain": 0, "started": 0, "on_minute": null, "off_minute": null, "minutes_played": 0, "goals": 0, "yellows": 0, "reds": 0, "name": "FRANCO CARRASCO, PABLO", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 16, "acta_id": 3784273, "person_id": 24, "club_id": 1150, "dorsal": 20, "position": null, "captain": 0, "started": 0, "on_minute": 89, "off_minute": null, "minutes_played": 1, "goals": 0, "yellows": 0, "reds": 0, "name": "MALDONADO MOYA, IZAN", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 17, "acta_id": 3784273, "person_id": 25, "club_id": 1150, "dorsal": 18, "position": null, "captain": 0, "started": 0, "on_minute": null, "off_minute": null, "minutes_played": 0, "goals": 0, "yellows": 0, "reds": 0, "name": "POUGET FLORIDO, MARC", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 18, "acta_id": 3784273, "person_id": 26, "club_id": 1150, "dorsal": 15, "position": null, "captain": 0, "started": 0, "on_minute": 65, "off_minute": null, "minutes_played": 25, "goals": 0, "yellows": 0, "reds": 0, "name": "FAURA MARTINEZ, JOEL", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 19, "acta_id": 3784273, "person_id": 27, "club_id": 1150, "dorsal": 2, "position": null, "captain": 0, "started": 0, "on_minute": 65, "off_minute": null, "minutes_played": 25, "goals": 0, "yellows": 1, "reds": 0, "name": "MARTIN DURAN, JUAN ANTONIO", "club": "CASTELLDEFELS, U.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 20, "acta_id": 3784273, "person_id": 35, "club_id": -1, "dorsal": 25, "position": "POR", "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "NADAL FERNANDEZ, CARLOS", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 21, "acta_id": 3784273, "person_id": 36, "club_id": -1, "dorsal": 7, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "BECERRA MARTINEZ, CRISTIAN", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 22, "acta_id": 3784273, "person_id": 37, "club_id": -1, "dorsal": 21, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 79, "minutes_played": 79, "goals": 0, "yellows": 0, "reds": 0, "name": "GURREA SANCHEZ, ALBERT", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 23, "acta_id": 3784273, "person_id": 38, "club_id": -1, "dorsal": 8, "position": null, "captain": 1, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 1, "reds": 0, "name": "CHICO MARINA, PATRICK", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 24, "acta_id": 3784273, "person_id": 39, "club_id": -1, "dorsal": 3, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "BASSOLS BOSCH, ADRIA", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 25, "acta_id": 3784273, "person_id": 40, "club_id": -1, "dorsal": 15, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": null, "minutes_played": 90, "goals": 0, "yellows": 0, "reds": 0, "name": "PEÑA PEREZ, SERGIO", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 26, "acta_id": 3784273, "person_id": 41, "club_id": -1, "dorsal": 6, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 53, "minutes_played": 53, "goals": 0, "yellows": 0, "reds": 0, "name": "VAQUERA LOPEZ, IKER", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 27, "acta_id": 3784273, "person_id": 42, "club_id": -1, "dorsal": 14, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 67, "minutes_played": 67, "goals": 0, "yellows": 1, "reds": 0, "name": "GARCIA PASCUAL, ALEX", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 28, "acta_id": 3784273, "person_id": 43, "club_id": -1, "dorsal": 10, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 89, "minutes_played": 89, "goals": 0, "yellows": 0, "reds": 0, "name": "BARON VARGAS, ADRIA", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 29, "acta_id": 3784273, "person_id": 44, "club_id": -1, "dorsal": 18, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 79, "minutes_played": 79, "goals": 0, "yellows": 0, "reds": 0, "name": "RODRIGUEZ ROSA, BIEL", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 30, "acta_id": 3784273, "person_id": 45, "club_id": -1, "dorsal": 12, "position": null, "captain": 0, "started": 1, "on_minute": 0, "off_minute": 67, "minutes_played": 67, "goals": 1, "yellows": 0, "reds": 0, "name": "SANCHEZ MOYA, DANIEL", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 31, "acta_id": 3784273, "person_id": 46, "club_id": -1, "dorsal": 1, "position": "POR", "captain": 0, "started": 0, "on_minute": null, "off_minute": null, "minutes_played": 0, "goals": 0, "yellows": 0, "reds": 0, "name": "BETRAN NAVARRO, XAVIER", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 32, "acta_id": 3784273, "person_id": 47, "club_id": -1, "dorsal": 9, "position": null, "captain": 0, "started": 0, "on_minute": 79, "off_minute": null, "minutes_played": 11, "goals": 0, "yellows": 1, "reds": 0, "name": "GENESCA GONZALEZ, LLORENÇ", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 33, "acta_id": 3784273, "person_id": 48, "club_id": -1, "dorsal": 22, "position": null, "captain": 0, "started": 0, "on_minute": 67, "off_minute": null, "minutes_played": 23, "goals": 0, "yellows": 0, "reds": 0, "name": "AYLLON JALDON, SERGI", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 34, "acta_id": 3784273, "person_id": 34, "club_id": -1, "dorsal": 0, "position": null, "captain": 0, "started": 0, "on_minute": null, "off_minute": null, "minutes_played": 0, "goals": 0, "yellows": 0, "reds": 0, "name": "MARTINEZ SIMON, LORENZO", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 35, "acta_id": 3784273, "person_id": 49, "club_id": -1, "dorsal": 20, "position": null, "captain": 0, "started": 0, "on_minute": 53, "off_minute": 89, "minutes_played": 36, "goals": 0, "yellows": 0, "reds": 0, "name": "RUIZ ROMERA, DANIEL", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 36, "acta_id": 3784273, "person_id": 50, "club_id": -1, "dorsal": 23, "position": null, "captain": 0, "started": 0, "on_minute": 67, "off_minute": null, "minutes_played": 23, "goals": 0, "yellows": 0, "reds": 0, "name": "GONZALEZ NAVARRO, DIDAC", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 37, "acta_id": 3784273, "person_id": 51, "club_id": -1, "dorsal": 16, "position": null, "captain": 0, "started": 0, "on_minute": 89, "off_minute": null, "minutes_played": 1, "goals": 0, "yellows": 0, "reds": 0, "name": "FALGUERAS LLOP, MARTÍ", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 38, "acta_id": 3784273, "person_id": 52, "club_id": -1, "dorsal": 5, "position": null, "captain": 0, "started": 0, "on_minute": 89, "off_minute": null, "minutes_played": 1, "goals": 0, "yellows": 0, "reds": 1, "name": "KARROUCH KADRI, HICHAM", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}, {"appearance_id": 39, "acta_id": 3784273, "person_id": 53, "club_id": -1, "dorsal": 24, "position": null, "captain": 0, "started": 0, "on_minute": 79, "off_minute": null, "minutes_played": 11, "goals": 0, "yellows": 0, "reds": 0, "name": "CLARÀ ANDREU, GERARD", "club": "JÚPITER, C.E.", "match_date": "2026-05-16", "matchday": 30, "venue": "Camp d'Esports Mpal. Els Canyars", "home": "CASTELLDEFELS, U.E.", "away": "JÚPITER, C.E.", "home_goals": 0, "away_goals": 1, "competition": "Lliga Elit", "grup": "Grup 1", "season": "2025/26", "source_url": "https://www.fcf.cat/ca/competicio/acta/3784273"}], "staff": [{"role": "entrenador", "name": "MOTOSO MARTÍNEZ, MIGUEL ÁNGEL", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "segon_entrenador", "name": "RODRIGUEZ LOPEZ, CARLOS", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "preparador_fisic", "name": "ROMERO SÁNCHEZ, SERGIO", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "ats", "name": "CABALLO NAVAS, SONIA", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "delegat_camp", "name": "RESCHKE, WALTER MIGUEL", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "delegat_equip", "name": "RESCHKE, WALTER MIGUEL", "club": "CASTELLDEFELS, U.E.", "acta_id": 3784273}, {"role": "entrenador", "name": "GARCIA YEPES, JUAN JOSE", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "segon_entrenador", "name": "FRANCO MARTÍNEZ, MARC", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "entrenador_porters", "name": "GARCÍA JIMÉNEZ, ELIFAZ", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "preparador_fisic", "name": "CASTELLANOS MATEO, DAVID", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "ats", "name": "LAZARO ALAYA, SUSANA", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "ats", "name": "PÉREZ DÍAZ, MÍKEL", "club": "JÚPITER, C.E.", "acta_id": 3784273}, {"role": "delegat_equip", "name": "MARTINEZ SIMON, LORENZO", "club": "JÚPITER, C.E.", "acta_id": 3784273}], "referees": [{"role": "principal", "name": "BALLESTEROS RÍOS, YERAY", "acta_id": 3784273}, {"role": "assistent_1", "name": "ELKASMY ELKASMI, MOHAMED", "acta_id": 3784273}, {"role": "assistent_2", "name": "SOLA MONTEAGUDO, POL", "acta_id": 3784273}], "events": [{"minute": 26, "event_type": "yellow", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "MATAMOROS SEGURA, JOEL", "related": null, "acta_id": 3784273}, {"minute": 35, "event_type": "yellow", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "ESTEBAN CANELLES, ALEIX", "related": null, "acta_id": 3784273}, {"minute": 38, "event_type": "yellow", "detail": null, "club": "JÚPITER, C.E.", "name": "GARCIA PASCUAL, ALEX", "related": null, "acta_id": 3784273}, {"minute": 44, "event_type": "yellow", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "VILLAVERDE GARCIA, KILIAN", "related": null, "acta_id": 3784273}, {"minute": 51, "event_type": "goal", "detail": "normal", "club": "JÚPITER, C.E.", "name": "SANCHEZ MOYA, DANIEL", "related": null, "acta_id": 3784273}, {"minute": 53, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "RUIZ ROMERA, DANIEL", "related": "VAQUERA LOPEZ, IKER", "acta_id": 3784273}, {"minute": 65, "event_type": "sub", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "DIAZ MENDOZA, ALEIX", "related": "PALOU NOGALES, CARLOS", "acta_id": 3784273}, {"minute": 65, "event_type": "sub", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "FAURA MARTINEZ, JOEL", "related": "PARRA GARCIA, EDGAR", "acta_id": 3784273}, {"minute": 65, "event_type": "sub", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "MARTIN DURAN, JUAN ANTONIO", "related": "MATAMOROS SEGURA, JOEL", "acta_id": 3784273}, {"minute": 67, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "AYLLON JALDON, SERGI", "related": "GARCIA PASCUAL, ALEX", "acta_id": 3784273}, {"minute": 67, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "GONZALEZ NAVARRO, DIDAC", "related": "SANCHEZ MOYA, DANIEL", "acta_id": 3784273}, {"minute": 77, "event_type": "sub", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "GERBOLES PEREZ, MARIO", "related": "ESTEBAN CANELLES, ALEIX", "acta_id": 3784273}, {"minute": 79, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "GENESCA GONZALEZ, LLORENÇ", "related": "GURREA SANCHEZ, ALBERT", "acta_id": 3784273}, {"minute": 79, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "CLARÀ ANDREU, GERARD", "related": "RODRIGUEZ ROSA, BIEL", "acta_id": 3784273}, {"minute": 86, "event_type": "yellow", "detail": null, "club": "JÚPITER, C.E.", "name": "CHICO MARINA, PATRICK", "related": null, "acta_id": 3784273}, {"minute": 88, "event_type": "yellow", "detail": "staff:entrenador", "club": "JÚPITER, C.E.", "name": "GARCIA YEPES, JUAN JOSE", "related": null, "acta_id": 3784273}, {"minute": 89, "event_type": "sub", "detail": null, "club": "CASTELLDEFELS, U.E.", "name": "MALDONADO MOYA, IZAN", "related": "GIBERT FUERTES, JOAN", "acta_id": 3784273}, {"minute": 89, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "FALGUERAS LLOP, MARTÍ", "related": "BARON VARGAS, ADRIA", "acta_id": 3784273}, {"minute": 89, "event_type": "sub", "detail": null, "club": "JÚPITER, C.E.", "name": "KARROUCH KADRI, HICHAM", "related": "RUIZ ROMERA, DANIEL", "acta_id": 3784273}, {"minute": null, "event_type": "red_double", "detail": "final", "club": "CASTELLDEFELS, U.E.", "name": "GERBOLES PEREZ, MARIO", "related": null, "acta_id": 3784273}, {"minute": null, "event_type": "yellow", "detail": "final", "club": "CASTELLDEFELS, U.E.", "name": "MARTIN DURAN, JUAN ANTONIO", "related": null, "acta_id": 3784273}, {"minute": null, "event_type": "yellow", "detail": "final", "club": "JÚPITER, C.E.", "name": "GENESCA GONZALEZ, LLORENÇ", "related": null, "acta_id": 3784273}, {"minute": null, "event_type": "red_double", "detail": "final", "club": "JÚPITER, C.E.", "name": "KARROUCH KADRI, HICHAM", "related": null, "acta_id": 3784273}], "positions": {"GARCIA MARTÍN, ÁLVARO": "POR", "FERRANDO RASO, ALEX": "POR"}};</script>
+<script>
+const D = window.FCF_DATA;
+const CLUB = 'CASTELLDEFELS, U.E.';
+const SEASON_MATCHDAYS = 30;
+
+const KIT = `<svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <path d="M22 6 L32 11 L42 6 L56 13 L50 26 L45 24 V58 H19 V24 L14 26 L8 13 Z"
+        fill="currentColor" opacity=".2"/>
+  <path d="M22 6 L32 11 L42 6 L56 13 L50 26 L45 24 V58 H19 V24 L14 26 L8 13 Z"
+        stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M22 6 C24 14 40 14 42 6" stroke="currentColor" stroke-width="1.6"/>
+</svg>`;
+
+const ROLE_CA = {
+  entrenador:'Entrenador', segon_entrenador:'Segon entrenador',
+  entrenador_porters:'Entrenador de porters', preparador_fisic:'Preparador físic',
+  ats:'A.T.S.', delegat_camp:'Delegat de camp', delegat_equip:"Delegat d'equip"
+};
+
+/* ---------- aggregate appearances into a squad ---------- */
+const matches = {};
+D.appearances.forEach(a => {
+  matches[a.acta_id] = {
+    acta_id:a.acta_id, matchday:a.matchday, date:a.match_date, venue:a.venue,
+    home:a.home, away:a.away, hg:a.home_goals, ag:a.away_goals,
+    competition:a.competition, grup:a.grup, season:a.season, source:a.source_url
+  };
+});
+const matchList = Object.values(matches).sort((x,y) => x.matchday - y.matchday);
+
+const squad = {};
+D.appearances.filter(a => a.club === CLUB).forEach(a => {
+  const s = squad[a.name] ||= {
+    name:a.name, dorsal:a.dorsal, position:a.position, captain:0,
+    called:0, played:0, starts:0, minutes:0, goals:0, yellows:0, reds:0, log:[]
+  };
+  s.dorsal = a.dorsal;
+  if (a.position) s.position = a.position;
+  s.captain  = Math.max(s.captain, a.captain);
+  s.called  += 1;
+  s.minutes += a.minutes_played;
+  s.goals   += a.goals;
+  s.yellows += a.yellows;
+  s.reds    += a.reds;
+  if (a.started) s.starts += 1;
+  if (a.minutes_played > 0) s.played += 1;
+  s.log.push(a);
+});
+const players = Object.values(squad);
+
+/* ---------- rating ----------
+   Built only from what an acta can prove: availability, goals, clean sheets,
+   discipline. It is shrunk towards a neutral 50 by sample size, so one good
+   afternoon cannot manufacture an 88. Full weight arrives at ~450 minutes.  */
+const POS = D.positions || {};
+const SHRINK = 450;                       // minutes for the metric to count fully
+const AVAILABLE = matchList.length * 90;
+
+function recompute(){
+players.forEach(p => {
+  p.role = POS[p.name] || (p.position === 'POR' ? 'POR' : null);
+  p.conceded = 0; p.cleanSheets = 0; p.qualifying = 0;
+  p.log.forEach(a => {
+    if (a.minutes_played < 45) return;    // too little pitch time to credit
+    const mt = matches[a.acta_id];
+    const ga = mt.home === CLUB ? mt.ag : mt.hg;
+    p.qualifying++; p.conceded += ga;
+    if (ga === 0) p.cleanSheets++;
+  });
+
+  const share  = AVAILABLE ? Math.min(1, p.minutes / AVAILABLE) : 0;
+  const w      = p.minutes / (p.minutes + SHRINK);
+  const g90    = p.minutes ? p.goals * 90 / p.minutes : 0;
+  const csRate = p.qualifying ? p.cleanSheets / p.qualifying : 0;
+  const clamp  = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
+  // Role metric, expressed 0–1 with 0.5 as par for that role.
+  let metric, basis;
+  if (p.role === 'DAV')      { metric = clamp(g90 / 0.70, 0, 1);  basis = 'gols per 90'; }
+  else if (p.role === 'MIG') { metric = clamp(g90 / 0.40, 0, 1);  basis = 'gols per 90'; }
+  else if (p.role === 'DEF' ||
+           p.role === 'POR') { metric = clamp(csRate, 0, 1);      basis = 'porteria a zero'; }
+  else                       { metric = clamp((g90 / 0.50) * 0.5 + csRate * 0.5, 0, 1);
+                               basis = 'gols i porteria a zero'; }
+
+  const disc = p.minutes ? (p.yellows + p.reds * 3) * 90 / p.minutes : 0;
+
+  p.parts = {
+    availability: 18 * share,
+    contribution: 22 * w * (metric - 0.5) * 2,
+    discipline: -10 * clamp(disc / 0.35, 0, 1)
+  };
+  p.basis = basis;
+  p.confidence = w;
+  p.rating = Math.round(clamp(
+    50 + p.parts.availability + p.parts.contribution + p.parts.discipline, 35, 99));
+});
+}
+recompute();
+
+const ROLE_LABEL = {POR:'Porter', DEF:'Defensa', MIG:'Migcampista', DAV:'Davanter'};
+const ROLE_CODE  = {POR:'POR', DEF:'DEF', MIG:'MIG', DAV:'DAV'};
+
+/* ---------- header ---------- */
+const m0 = matchList[0];
+document.getElementById('compline').textContent =
+  `${m0.competition} · ${m0.grup} · Temporada ${m0.season}`;
+
+const tally = matchList.reduce((acc, m) => {
+  const home = m.home === CLUB;
+  const gf = home ? m.hg : m.ag, ga = home ? m.ag : m.hg;
+  acc.gf += gf; acc.ga += ga;
+  acc[gf > ga ? 'w' : gf === ga ? 'd' : 'l']++;
+  return acc;
+}, {w:0,d:0,l:0,gf:0,ga:0});
+
+document.getElementById('record').innerHTML = `
+  <div><b>${matchList.length}</b><span>partits</span></div>
+  <div><b>${tally.w}</b><span>guanyats</span></div>
+  <div><b>${tally.d}</b><span>empatats</span></div>
+  <div><b>${tally.l}</b><span>perduts</span></div>
+  <div><b>${tally.gf}–${tally.ga}</b><span>gols</span></div>`;
+
+document.getElementById('notice').textContent =
+  `${matchList.length} de ${SEASON_MATCHDAYS} jornades carregades. ` +
+  `Les xifres es refereixen només als partits disponibles.`;
+
+/* ---------- rendering ---------- */
+const view = document.getElementById('view');
+const controls = document.getElementById('controls');
+let current = 'squad';
+
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if (!b) return;
+  current = b.dataset.view;
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t === b));
+  render();
+});
+document.getElementById('sort').addEventListener('change', render);
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function shortName(n){
+  const [sur, given] = n.split(',').map(x => (x||'').trim());
+  const g = given ? given.split(' ')[0] : '';
+  return ((g ? g + ' ' : '') + sur.split(' ')[0]);
+}
+function fmtDate(d){
+  const [y,mo,da] = d.split('-');
+  const mesos = ['gen','feb','mar','abr','mai','jun','jul','ago','set','oct','nov','des'];
+  return `${+da} ${mesos[+mo-1]} ${y}`;
+}
+
+function sortPlayers(){
+  const k = document.getElementById('sort').value;
+  const by = {
+    rating:(a,b) => b.rating - a.rating || b.minutes - a.minutes,
+    minutes:(a,b) => b.minutes - a.minutes || a.dorsal - b.dorsal,
+    dorsal:(a,b) => a.dorsal - b.dorsal,
+    name:(a,b) => a.name.localeCompare(b.name, 'ca'),
+    goals:(a,b) => b.goals - a.goals || b.minutes - a.minutes,
+    cards:(a,b) => (b.yellows + b.reds*2) - (a.yellows + a.reds*2) || b.minutes - a.minutes
+  }[k];
+  return [...players].sort(by);
+}
+
+function renderSquad(){
+  controls.style.display = 'flex';
+  view.innerHTML = '<div class="grid">' + sortPlayers().map((p,i) => {
+    const gk = p.position === 'POR';
+    let badges = '';
+    if (p.captain) badges += '<span class="badge b-c">C</span> ';
+    if (p.goals)   badges += `<span class="badge b-g">${p.goals} G</span> `;
+    if (p.yellows) badges += `<span class="badge b-y">${p.yellows}</span> `;
+    if (p.reds)    badges += `<span class="badge b-r">${p.reds}</span>`;
+    return `<button class="card ${gk?'gk':''}" data-i="${i}">
+      <div class="top">
+        <div>
+          <div class="num">${p.rating}</div>
+          <div class="pos">${p.role ? ROLE_CODE[p.role] : 'SENSE POS.'}</div>
+          <div class="dor">#${p.dorsal}</div>
+        </div>
+        <div class="badges">${badges}</div>
+      </div>
+      <div class="kit">${KIT}</div>
+      <div class="nm">${esc(shortName(p.name))}</div>
+      <div class="conf"><span style="width:${Math.round(p.confidence*100)}%"></span></div>
+      <div class="stats">
+        <span>MIN <b>${p.minutes}</b></span>
+        <span>PJ <b>${p.played}</b></span>
+        <span>TIT <b>${p.starts}</b></span>
+        <span>GOL <b>${p.goals}</b></span>
+      </div>
+    </button>`;
+  }).join('') + '</div>';
+
+  const sorted = sortPlayers();
+  view.querySelectorAll('.card').forEach(c =>
+    c.addEventListener('click', () => openPlayer(sorted[+c.dataset.i])));
+}
+
+function renderMatches(){
+  controls.style.display = 'none';
+  view.innerHTML = matchList.map(m => {
+    const home = m.home === CLUB;
+    const gf = home ? m.hg : m.ag, ga = home ? m.ag : m.hg;
+    const cls = gf > ga ? 'w' : gf === ga ? 'd' : 'l';
+    const opp = home ? m.away : m.home;
+    return `<div class="match">
+      <div class="jor"><b>${m.matchday}</b><span>jornada</span></div>
+      <div class="fx">
+        <div class="t">${home ? '' : 'a '}${esc(opp)}</div>
+        <div class="d">${fmtDate(m.date)} · ${esc(m.venue)}</div>
+      </div>
+      <div class="res ${cls}">${gf}–${ga}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStaff(){
+  controls.style.display = 'none';
+  const rows = D.staff.filter(s => s.club === CLUB);
+  const seen = new Set();
+  view.innerHTML = rows.filter(s => {
+    const k = s.name + s.role;
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  }).map(s => `<div class="match">
+      <div class="fx">
+        <div class="t">${esc(s.name)}</div>
+        <div class="d">${ROLE_CA[s.role] || s.role}</div>
+      </div>
+    </div>`).join('');
+}
+
+function openPlayer(p){
+  const gk = p.position === 'POR';
+  const lines = p.log.map(a => {
+    const m = matches[a.acta_id];
+    const home = m.home === CLUB;
+    const gf = home ? m.hg : m.ag, ga = home ? m.ag : m.hg;
+    const ev = [];
+    if (a.started) ev.push('titular'); else if (a.minutes_played) ev.push(`entra ${a.on_minute}'`);
+    else ev.push('no juga');
+    if (a.off_minute) ev.push(`surt ${a.off_minute}'`);
+    if (a.goals)   ev.push(`${a.goals} gol${a.goals>1?'s':''}`);
+    if (a.yellows) ev.push('groga');
+    if (a.reds)    ev.push('vermella');
+    return `<div class="l">
+      <i>J${m.matchday}</i>
+      <div>${esc(home ? m.away : 'a ' + m.home)} ${gf}–${ga}<br>
+        <span style="color:var(--muted);font-size:12.5px">${ev.join(' · ')} — ${a.minutes_played}'</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('sheetBody').innerHTML = `
+    <h2>${esc(p.name)}</h2>
+    <div class="role">Dorsal ${p.dorsal}${p.captain ? ' · Capità' : ''}</div>
+
+    <div style="display:flex;align-items:baseline;gap:10px;margin-top:14px">
+      <div style="font-size:38px;font-weight:800;letter-spacing:-.04em">${p.rating}</div>
+      <div style="flex:1">
+        <div style="font-size:12.5px;color:var(--muted)">Valoració · base ${p.basis}</div>
+        <div class="bar"><i style="width:${Math.round(p.confidence*100)}%"></i></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px">
+          Fiabilitat ${Math.round(p.confidence*100)}% · ${p.minutes} min de mostra
+        </div>
+      </div>
+    </div>
+
+    <div class="brk">
+      <div><span>Base</span><b>50</b></div>
+      <div><span>Disponibilitat</span><b>${fmtP(p.parts.availability)}</b></div>
+      <div><span>Rendiment (${p.basis})</span><b>${fmtP(p.parts.contribution)}</b></div>
+      <div><span>Disciplina</span><b>${fmtP(p.parts.discipline)}</b></div>
+    </div>
+
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Posició</div>
+    <div class="pos-pick" id="posPick">
+      ${['POR','DEF','MIG','DAV'].map(r =>
+        `<button data-r="${r}" aria-pressed="${p.role===r}">${ROLE_LABEL[r]}</button>`).join('')}
+    </div>
+
+    <div class="kpis">
+      <div><b>${p.minutes}</b><span>minuts</span></div>
+      <div><b>${p.starts}/${p.called}</b><span>titular</span></div>
+      <div><b>${p.goals}</b><span>gols</span></div>
+      <div><b>${p.cleanSheets}/${p.qualifying}</b><span>porta zero</span></div>
+    </div>
+
+    <div class="log">${lines}</div>
+    <button class="close" id="closeBtn">Tanca</button>`;
+
+  const dlg = document.getElementById('sheet');
+  dlg.showModal();
+  document.getElementById('closeBtn').onclick = () => dlg.close();
+  document.getElementById('posPick').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    POS[p.name] = POS[p.name] === b.dataset.r ? undefined : b.dataset.r;
+    recompute(); dlg.close(); render();
+    const assigned = Object.entries(POS).filter(([,v]) => v);
+    console.log('positions.json:', JSON.stringify(Object.fromEntries(assigned), null, 2));
+  });
+}
+
+function fmtP(n){ return (n >= 0 ? '+' : '') + n.toFixed(1); }
+
+function render(){
+  if (current === 'squad') renderSquad();
+  else if (current === 'matches') renderMatches();
+  else renderStaff();
+}
+render();
+</script>
+</body>
+</html>
