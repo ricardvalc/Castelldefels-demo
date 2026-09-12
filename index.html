@@ -181,11 +181,11 @@
   <div class="controls" id="controls">
     <label for="sort">Ordena per</label>
     <select id="sort">
-      <option value="rating">Valoració</option>
       <option value="minutes">Minuts jugats</option>
       <option value="dorsal">Dorsal</option>
       <option value="name">Nom</option>
       <option value="goals">Gols</option>
+      <option value="starts">Titularitats</option>
       <option value="cards">Targetes</option>
     </select>
   </div>
@@ -287,6 +287,7 @@ players.forEach(p => {
 
   const disc = p.minutes ? (p.yellows + p.reds * 3) * 90 / p.minutes : 0;
 
+  p.share = share;
   p.parts = {
     availability: 18 * share,
     contribution: 22 * w * (metric - 0.5) * 2,
@@ -355,7 +356,7 @@ function fmtDate(d){
 function sortPlayers(){
   const k = document.getElementById('sort').value;
   const by = {
-    rating:(a,b) => b.rating - a.rating || b.minutes - a.minutes,
+    starts:(a,b) => b.starts - a.starts || b.minutes - a.minutes,
     minutes:(a,b) => b.minutes - a.minutes || a.dorsal - b.dorsal,
     dorsal:(a,b) => a.dorsal - b.dorsal,
     name:(a,b) => a.name.localeCompare(b.name, 'ca'),
@@ -377,25 +378,33 @@ function renderSquad(){
     return `<button class="card ${gk?'gk':''}" data-i="${i}">
       <div class="top">
         <div>
-          <div class="num">${p.rating}</div>
-          <div class="pos">${p.role ? ROLE_CODE[p.role] : 'SENSE POS.'}</div>
-          <div class="dor">#${p.dorsal}</div>
+          <div class="num">${p.dorsal}</div>
+          <div class="pos">${p.role ? ROLE_CODE[p.role] : (gk ? 'POR' : '')}</div>
         </div>
         <div class="badges">${badges}</div>
       </div>
       <div class="kit">${KIT}</div>
       <div class="nm">${esc(shortName(p.name))}</div>
-      <div class="conf"><span style="width:${Math.round(p.confidence*100)}%"></span></div>
+      <div class="conf" title="part dels minuts disponibles">
+        <span style="width:${Math.round(p.share*100)}%"></span></div>
       <div class="stats">
         <span>MIN <b>${p.minutes}</b></span>
         <span>PJ <b>${p.played}</b></span>
         <span>TIT <b>${p.starts}</b></span>
         <span>GOL <b>${p.goals}</b></span>
+        <span>TAR <b>${p.yellows}${p.reds ? '+' + p.reds : ''}</b></span>
+        <span>PZ <b>${p.cleanSheets}</b></span>
       </div>
     </button>`;
   }).join('') + '</div>';
 
   const sorted = sortPlayers();
+  view.insertAdjacentHTML('beforeend',
+    `<div style="font-size:11.5px;color:var(--muted);margin-top:16px;line-height:1.7">
+       MIN minuts jugats · PJ partits jugats · TIT titularitats · GOL gols ·
+       TAR targetes (grogues+vermelles) · PZ porta a zero<br>
+       La barra daurada mostra la part dels minuts disponibles.
+     </div>`);
   view.querySelectorAll('.card').forEach(c =>
     c.addEventListener('click', () => openPlayer(sorted[+c.dataset.i])));
 }
@@ -460,34 +469,33 @@ function openPlayer(p){
     <div class="role">Dorsal ${p.dorsal}${p.captain ? ' · Capità' : ''}</div>
 
     <div style="display:flex;align-items:baseline;gap:10px;margin-top:14px">
-      <div style="font-size:38px;font-weight:800;letter-spacing:-.04em">${p.rating}</div>
+      <div style="font-size:38px;font-weight:800;letter-spacing:-.04em">${p.minutes}'</div>
       <div style="flex:1">
-        <div style="font-size:12.5px;color:var(--muted)">Valoració · base ${p.basis}</div>
-        <div class="bar"><i style="width:${Math.round(p.confidence*100)}%"></i></div>
+        <div style="font-size:12.5px;color:var(--muted)">
+          ${Math.round(p.share*100)}% dels minuts disponibles
+        </div>
+        <div class="bar"><i style="width:${Math.round(p.share*100)}%"></i></div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px">
-          Fiabilitat ${Math.round(p.confidence*100)}% · ${p.minutes} min de mostra
+          ${p.played} de ${matchList.length} partits · ${p.starts} com a titular
         </div>
       </div>
     </div>
 
     <div class="brk">
-      <div><span>Base</span><b>50</b></div>
-      <div><span>Disponibilitat</span><b>${fmtP(p.parts.availability)}</b></div>
-      <div><span>Rendiment (${p.basis})</span><b>${fmtP(p.parts.contribution)}</b></div>
-      <div><span>Disciplina</span><b>${fmtP(p.parts.discipline)}</b></div>
+      <div><span>Gols</span><b>${p.goals}</b></div>
+      <div><span>Targetes grogues</span><b>${p.yellows}</b></div>
+      <div><span>Targetes vermelles</span><b>${p.reds}</b></div>
+      <div><span>Porta a zero (amb ell al camp)</span><b>${p.cleanSheets} de ${p.qualifying}</b></div>
+      <div><span>Gols encaixats jugant</span><b>${p.conceded}</b></div>
+      <div><span>Convocatòries</span><b>${p.called}</b></div>
     </div>
 
-    <div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Posició</div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">
+      Posició <span style="opacity:.7">— opcional, activa la valoració per rol</span>
+    </div>
     <div class="pos-pick" id="posPick">
       ${['POR','DEF','MIG','DAV'].map(r =>
         `<button data-r="${r}" aria-pressed="${p.role===r}">${ROLE_LABEL[r]}</button>`).join('')}
-    </div>
-
-    <div class="kpis">
-      <div><b>${p.minutes}</b><span>minuts</span></div>
-      <div><b>${p.starts}/${p.called}</b><span>titular</span></div>
-      <div><b>${p.goals}</b><span>gols</span></div>
-      <div><b>${p.cleanSheets}/${p.qualifying}</b><span>porta zero</span></div>
     </div>
 
     <div class="log">${lines}</div>
